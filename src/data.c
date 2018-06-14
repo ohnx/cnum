@@ -93,6 +93,7 @@ int data_open(const char *location, data_handle **handle) {
  */
 int data_read(data_handle *handle_image, data_handle *handle_label, int index, mnist_image **image) {
     int r;
+    size_t n;
 
     /* ensure the handles are what they should be */
     if (handle_image->type != IMAGE || handle_label->type != LABEL) return ERROR_INVALIDINPUT;
@@ -112,13 +113,32 @@ int data_read(data_handle *handle_image, data_handle *handle_label, int index, m
         SEEK_START);
     if (!r) return ERROR_READFILE;
 
-    /* begin reading data */
-    /* TODO: stopped writing code here */
+    /* allocate the memory for the data */
+    *image = malloc(sizeof(mnist_image));
+    if (!(*image)) return ERROR_OOM;
 
+    /* read image data */
+    n = fread((*image)->data, 1, DATA_IMAGE_SIZE * DATA_IMAGE_SIZE, handle_image->f);
+    if (n != DATA_IMAGE_SIZE * DATA_IMAGE_SIZE) {
+        free(*image);
+        return ERROR_READFILE;
+    }
+
+    /* read label data */
+    n = fread((*image)->label, 1, 1, handle_label->f);
+    if (n != 1) {
+        free(*image);
+        return ERROR_READFILE;
+    }
+
+    /* all done */
     return ERROR_OK;
 }
 
 /**
- * 
+ * Clean up everything
  */
-
+void data_cleanup(data_handle *handle) {
+    fclose(handle->f);
+    free(handle);
+}

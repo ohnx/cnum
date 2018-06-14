@@ -32,8 +32,12 @@ typedef struct _data_handle {
 typedef unsigned char byte;
 
 typedef struct _mnist_image {
-    byte label;
     byte data[DATA_IMAGE_SIZE*DATA_IMAGE_SIZE];
+    byte label;
 } mnist_image;
+
+int data_open(const char *location, data_handle **handle);
+int data_read(data_handle *handle_image, data_handle *handle_label, int index, mnist_image **image);
+void data_cleanup(data_handle *handle);
 
 #endif /* __DATA_H_INC */
