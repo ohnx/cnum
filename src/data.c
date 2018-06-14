@@ -36,7 +36,7 @@ int data_open(const char *location, data_handle **handle) {
 
     /* read header magic number */
     r = fread(&magicnum, sizeof(int), 1, fp);
-    if (r < sizeof(int)) { fclose(fp); free(*handle); return ERROR_READFILE; }
+    if (r != 1) { fclose(fp); free(*handle); return ERROR_READFILE; }
 
     /* check header magic number */
     magicnum = ntohl(magicnum); /* file is big-endian */
@@ -46,17 +46,20 @@ int data_open(const char *location, data_handle **handle) {
 
     /* read number of values */
     r = fread(&((*handle)->count), sizeof(int), 1, fp);
-    if (r < sizeof(int)) { fclose(fp); free(*handle); return ERROR_READFILE; }
+    if (r != 1) { fclose(fp); free(*handle); return ERROR_READFILE; }
     (*handle)->count = ntohl((*handle)->count); /* file is big-endian */
 
     /* check if image size is compatible */
     if ((*handle)->type == IMAGE) {
         /* TODO: code duplication */
         r = fread(&rcn, sizeof(int), 1, fp);
-        if (r < sizeof(int)) { fclose(fp); free(*handle); return ERROR_READFILE; }
+        if (r != 1) { fclose(fp); free(*handle); return ERROR_READFILE; }
+        rcn = ntohl(rcn);
         if (rcn != DATA_IMAGE_SIZE) return ERROR_NONSTANDARDFILE;
+
         r = fread(&rcn, sizeof(int), 1, fp);
-        if (r < sizeof(int)) { fclose(fp); free(*handle); return ERROR_READFILE; }
+        if (r != 1) { fclose(fp); free(*handle); return ERROR_READFILE; }
+        rcn = ntohl(rcn);
         if (rcn != DATA_IMAGE_SIZE) return ERROR_NONSTANDARDFILE;
     }
 
@@ -67,7 +70,7 @@ int data_open(const char *location, data_handle **handle) {
         /* image */
         size -= IMAGE_HEADER_SIZE;
         /* 28x28 always */
-        size -= ((long int)(DATA_IMAGE_SIZE*DATA_IMAGE_SIZE) * ((long int)(*handle)->count + 1));
+        size -= (long int)(DATA_IMAGE_SIZE*DATA_IMAGE_SIZE) * (((long int)(*handle)->count));
         if (size != 0) {
             fclose(fp);
             free(*handle);
@@ -76,7 +79,7 @@ int data_open(const char *location, data_handle **handle) {
     } else {
         /* label */
         size -= LABEL_HEADER_SIZE;
-        size -= ((*handle)->count + 1);
+        size -= (*handle)->count;
         if (size != 0) {
             fclose(fp);
             free(*handle);
@@ -104,28 +107,28 @@ int data_read(data_handle *handle_image, data_handle *handle_label, int index, m
     /* seek to the correct index for image */
     r = fseek(handle_image->f,
         IMAGE_HEADER_SIZE + (long int)(DATA_IMAGE_SIZE * DATA_IMAGE_SIZE) * (index),
-        SEEK_START);
-    if (!r) return ERROR_READFILE;
+        SEEK_SET);
+    if (r) return ERROR_READFILE;
 
     /* seek to the correct index for labels */
-    r = fseek(handle_image->f,
-        IMAGE_HEADER_SIZE + (long int)(DATA_IMAGE_SIZE * DATA_IMAGE_SIZE) * (index),
-        SEEK_START);
-    if (!r) return ERROR_READFILE;
+    r = fseek(handle_label->f,
+        LABEL_HEADER_SIZE + index,
+        SEEK_SET);
+    if (r) return ERROR_READFILE;
 
     /* allocate the memory for the data */
     *image = malloc(sizeof(mnist_image));
     if (!(*image)) return ERROR_OOM;
 
     /* read image data */
-    n = fread((*image)->data, 1, DATA_IMAGE_SIZE * DATA_IMAGE_SIZE, handle_image->f);
-    if (n != DATA_IMAGE_SIZE * DATA_IMAGE_SIZE) {
+    n = fread(&((*image)->data), DATA_IMAGE_SIZE * DATA_IMAGE_SIZE, 1, handle_image->f);
+    if (n != 1) {
         free(*image);
         return ERROR_READFILE;
     }
 
     /* read label data */
-    n = fread((*image)->label, 1, 1, handle_label->f);
+    n = fread(&((*image)->label), 1, 1, handle_label->f);
     if (n != 1) {
         free(*image);
         return ERROR_READFILE;
