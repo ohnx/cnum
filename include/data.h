@@ -32,7 +32,9 @@ typedef struct _data_handle {
 typedef unsigned char byte;
 
 typedef struct _mnist_image {
+    /* image data */
     byte data[DATA_IMAGE_SIZE*DATA_IMAGE_SIZE];
+    /* image label */
     byte label;
 } mnist_image;
 

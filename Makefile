@@ -1,7 +1,7 @@
 INCLUDES=-Iinclude/
 CFLAGS=$(INCLUDES) -Wall -Werror -ansi -pedantic
 
-OBJ=objs/data.o objs/main.o
+OBJ=objs/data.o objs/main.o objs/perceptron.o
 OUTPUT=cnum
 
 .PHONY: debug
