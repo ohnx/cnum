@@ -1,2 +1,4 @@
 cnum
 objs/
+*.o
+*.a
