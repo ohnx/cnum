@@ -136,7 +136,6 @@ int main(int argc, char **argv) {
     printf(" done in %fs!\n", ((double)(end - begin) / CLOCKS_PER_SEC));
 
     printf("test again, too!\n");
-testing:
     /* now we run real tests */
     printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
     k = 0;
@@ -154,8 +153,9 @@ testing:
     end = clock();
     printf("\rrunning tests on neural network... testing image %05d of %05d...", testing.image_handle->count, testing.image_handle->count);fflush(stdout);
     printf(" done in %fs with %f%% accuracy!\n", ((double)(end - begin) / CLOCKS_PER_SEC), (1-(double)k/(double)(testing.image_handle->count))*100);
+testing:
 
-    /* now we run tests */
+    /* now we allow the user to test the network for themself */
     printf("try the network for yourself!\n");
     do {
         printf("pick a number between 0 and %d, inclusive: ", testing.image_handle->count); fflush(stdout);

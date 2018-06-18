@@ -91,7 +91,7 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
         CblasColMajor, /* row-major (C) */
         CblasNoTrans, /* no transposition */
         10, 784, /* Matrix A is 10x784 */
-        1.0, /* No scaling factor for now; TODO: scale to 1/784 */
+        1.0/784, /* No scaling factor for now; TODO: scale to 1/784 */
         (double *)self, /* Matrix A */
         10, /* A[10][n] lda = 784 */
         (double *)&input_d, /* vector X should be a 784x1 matrix */
@@ -100,6 +100,9 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
         (double *)output, /* output vector Y */
         1 /* no skip */
     );
+
+    for (i = 0; i < 10; i++) printf("%f ", output->vec[i]);
+    printf("\n");
 
     return ERROR_OK;
 }
