@@ -5,7 +5,7 @@ MNIST number recognition using pure ANSI C.
 ## Perceptron
 
 Using a single-layer perceptron network with 10 neurons with inputs ranging from 0 to 1,
-inclusive, I am able to obtain a 79% accuracy rate.
+inclusive, I am able to obtain an 80% accuracy rate after the second round of training.
 
 Problem numbers include #11 and #65 of t10k which are incorrectly recognized as 8 and #24 of t10k.
 
