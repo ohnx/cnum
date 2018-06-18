@@ -4,8 +4,10 @@
 #include <stdlib.h>
 /* time() */
 #include <time.h>
-/* memcpy() */
+/* memcpy(), memset() */
 #include <string.h>
+/* cblas_dgemv() */
+#include <cblas.h>
 
 #include "error.h"
 #include "perceptron.h"
@@ -65,8 +67,9 @@ int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
     return ERROR_OK;
 }
 
-int simplenet_run(simplenet *self, mnist_image *input, vec10d *output) {
-    byte i;
+int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
+    int i;
+    vec784d input_d;
 
     /*
      * this is the equivalent of multiplying a 1x784 matrix (input) by a 784x10 matrix (weights)
@@ -76,10 +79,27 @@ int simplenet_run(simplenet *self, mnist_image *input, vec10d *output) {
      * fast enough :)
      */
 
-    /* calculate for each neuron */
-    for (i = 0; i < 10; i++) {
-        (void)simplenet_vec784d_run(&self->neurons[i], (vec784 *)&input->data, &output->vec[i]);
-    }
+    /* convert the input */
+    for (i = 0; i < 784; i++)
+        input_d.vec[i] = (double)input->vec[i]/255.0f;
+
+    /* clear the input */
+    memset(output, 0, sizeof(vec10d));
+
+    /* multiply the matrix */
+    cblas_dgemv(
+        CblasColMajor, /* row-major (C) */
+        CblasNoTrans, /* no transposition */
+        10, 784, /* Matrix A is 10x784 */
+        1.0, /* No scaling factor for now; TODO: scale to 1/784 */
+        (double *)self, /* Matrix A */
+        10, /* A[10][n] lda = 784 */
+        (double *)&input_d, /* vector X should be a 784x1 matrix */
+        1, /* output skip */
+        0.0, /* scaling factor for vector Y is 0 since we don't use it */
+        (double *)output, /* output vector Y */
+        1 /* no skip */
+    );
 
     return ERROR_OK;
 }
@@ -90,7 +110,7 @@ int simplenet_train(simplenet *self, mnist_image *input) {
     double error;
 
     /* run the network to see what the results are */
-    simplenet_run(self, input, &neuron_outputs);
+    simplenet_run(self, (vec784 *)input->data, &neuron_outputs);
 
     /* loop through and perform corrections as necessary */
     for (i = 0; i < 10; i++) {
@@ -109,7 +129,7 @@ int simplenet_classify(simplenet *self, mnist_image *input, byte *classification
     byte i, li = 0;
 
     /* run the network */
-    (void)simplenet_run(self, input, &results);
+    (void)simplenet_run(self, (vec784 *)input->data, &results);
 
     /* interpret the results */
     for (i = 0; i < 10; i++) {
