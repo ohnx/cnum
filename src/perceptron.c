@@ -2,23 +2,43 @@
 
 /* malloc(), free(), rand(), etc. */
 #include <stdlib.h>
+/* time() */
+#include <time.h>
 
 #include "error.h"
 #include "perceptron.h"
 
-int layer_perceptron_init(int num_neurons, int num_inputs, layer_perceptron **layer) {
-    neuron_perceptron *neuron;
-    void **allocations;
-    int i, j, allocations_n = 0;
+#ifdef __I_KNOW_WHAT_IM_DOING
 
-    /* allocate memory to keep track of allocations */
-    allocations = malloc(sizeof(void *) * (2 + num_neurons));
-    if (!allocations) return ERROR_OOM;
+/**
+ * Initialize a single neuron with random weights
+ */
+int neuron_perceptron_init(int num_inputs, neuron_perceptron **neuron) {
+    int i;
 
+    /* allocate all memory required */
+    *neuron = malloc(sizeof(neuron_perceptron) + sizeof(double) * num_inputs);
+    if (!(*neuron)) return ERROR_OOM;
+
+    /* set number of inputs and array location */
+    (*neuron)->n = num_inputs;
+    (*neuron)->weights = *neuron + sizeof(neuron_perceptron);
+
+    /* initialize neurons to random values */
+    for (i = 0; i < num_inputs; i++) {
+        (*neuron)->weights[i] = rand()/((double)(RAND_MAX));
+    }
+
+    return ERROR_OK;
+}
+
+/**
+ * Initialize a layer of neurons (but not each individual neuron)
+ */
+int layer_perceptron_init(int num_neurons, layer_perceptron **layer) {
     /* allocate memory for layer */
     *layer = malloc(sizeof(layer_perceptron));
-    if (!(*layer)) goto cleanup;
-    allocations[allocations_n++] = *layer;
+    if (!(*layer)) return ERROR_OOM;
 
     (*layer)->n = num_neurons;
 
@@ -56,3 +76,111 @@ cleanup:
 
     return ERROR_OOM;
 }
+
+int network_perceptron_init() {
+    
+}
+
+
+#else
+
+int simplenet_init(simplenet **net) {
+    int i, j;
+    static char c = 0;
+
+    /* allocate memory */
+    *net = malloc(sizeof(simplenet));
+    if (!(*net)) return ERROR_OOM;
+
+    /* seed time */
+    if (!c++) srand(time(NULL));
+
+    /* for each neuron */
+    for (i = 0; i < 10; i++)
+        /* for each weight */
+        for (j = 0; j < 784; j++)
+            /* initialize to a random number */
+            (*net)->neurons[j].vec[j] = rand()/((double)(RAND_MAX));
+
+    return ERROR_OK;
+}
+
+int simplenet_vec784d_run(vec784d *self, vec784 *input, double *output) {
+    double runningtotal = 0;
+    int i;
+
+    /* loop through each weight and multiply the weight by the input value */
+    for (i = 0; i < 784; i++) {
+        runningtotal += input->vec[i] * self->vec[i];
+    }
+
+    /* average */
+    *output = runningtotal / 784;
+
+    return ERROR_OK;
+}
+
+#define RATE 0.03
+int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
+    int i = 0;
+
+    /* loop through each weight and increase or decrease the weight */
+    for (i = 0; i < 784; i++) {
+        self->vec[i] += RATE * input->vec[i] * error;
+    }
+
+    return ERROR_OK;
+}
+
+int simplenet_run(simplenet *self, mnist_image *input, vec10d *output) {
+    byte i;
+
+    /* calculate for each neuron */
+    for (i = 0; i < 10; i++) {
+        (void)simplenet_vec784d_run(&self->neurons[i], (vec784 *)&input->data, &output->vec[i]);
+    }
+
+    return ERROR_OK;
+}
+
+int simplenet_train(simplenet *self, mnist_image *input) {
+    byte i;
+    vec10d neuron_outputs;
+    double error;
+
+    /* run the network to see what the results are */
+    simplenet_run(self, input, &neuron_outputs);
+
+    /* loop through and perform corrections as necessary */
+    for (i = 0; i < 10; i++) {
+        /* error is how far away from the correct answer this was */
+        error = (input->label == i ? 1 : 0) - neuron_outputs.vec[i];
+        (void)simplenet_vec784d_learnsup(&self->neurons[i], (vec784 *)&input->data, error);
+    }
+
+    return ERROR_OK;
+}
+
+int simplenet_classify(simplenet *self, mnist_image *input, byte *classification) {
+    vec10d results;
+    double max = 0;
+    byte i, li;
+
+    /* run the network */
+    (void)simplenet_run(self, input, &results);
+
+    /* interpret the results */
+    for (i = 0; i < 10; i++) {
+        if (results.vec[i] > max) {
+            max = results.vec[i];
+            li = i;
+        }
+    }
+
+    *classification = li;
+
+    return ERROR_OK;
+}
+
+#endif
+

@@ -6,6 +6,7 @@
 #ifndef __PERCEPTRON_H_INC
 #define __PERCEPTRON_H_INC
 
+#ifdef __I_KNOW_WHAT_IM_DOING
 typedef struct _neuron_perceptron {
     /* number of inputs (also number of weights) */
     int n;
@@ -26,5 +27,31 @@ typedef struct _network_perceptron {
     /* pointer to first element in array of layers */
     layer_perceptron *layers;
 } network_perceptron;
+
+#else
+
+#include "data.h"
+
+typedef struct __attribute__((packed)) _vec784 {
+    byte vec[784];
+} vec784;
+
+typedef struct __attribute__((packed)) _vec784d {
+    double vec[784];
+} vec784d;
+
+typedef struct __attribute__((packed)) _simplenet {
+    vec784d neurons[10];
+} simplenet;
+
+typedef struct __attribute__((packed)) _vec10d {
+    double vec[10];
+} vec10d;
+
+typedef struct __attribute__((packed)) _vec10 {
+    byte vec[10];
+} vec10;
+
+#endif
 
 #endif /* __PERCEPTRON_H_INC */

@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
         image_cleanup(image);
     }
 
+    /* create the neural network */
+    
+
     /* cleanup */
     data_cleanup(training.image_handle);
     data_cleanup(training.label_handle);
