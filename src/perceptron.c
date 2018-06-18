@@ -128,7 +128,7 @@ int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
 
     /* loop through each weight and increase or decrease the weight */
     for (i = 0; i < 784; i++) {
-        self->vec[i] += RATE * input->vec[i] * error;
+        self->vec[i] += RATE * ((double)input->vec[i] / 256.0f) * error;
         /* temporary fix... clip the max/min weights */
         if (self->vec[i] > 1.0f) self->vec[i] = 1;
         else if (self->vec[i] < -1.0f) self->vec[i] = -1;
