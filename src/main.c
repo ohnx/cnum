@@ -45,12 +45,12 @@ int main(int argc, char **argv) {
     r = simplenet_init(&network);
 
     /* train the neural network */
-    printf("training network on image %04d of %04d...", 0, training.image_handle->count);fflush(stdout);
+    printf("training network on image %05d of %05d...", 0, training.image_handle->count);fflush(stdout);
     for (i = 0; i < training.image_handle->count; i++) {
         r = data_read(training.image_handle, training.label_handle, i, &image);
         if (r != 0) printerr_and_quit(r);
-        if (!(i % 100)) {
-            printf("\rtraining network on image %04d of %04d...", i+1, training.image_handle->count);fflush(stdout);
+        if (!(i % 93)) {
+            printf("\rtraining network on image %05d of %05d...", i+1, training.image_handle->count);fflush(stdout);
         }
         (void)simplenet_train(network, image);
         image_cleanup(image);
@@ -58,9 +58,52 @@ int main(int argc, char **argv) {
     printf(" done!\n");
 
     /* now we run real tests */
+    printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
+    k = 0;
+    for (i = 0; i < testing.image_handle->count; i++) {
+        r = data_read(testing.image_handle, testing.label_handle, i, &image);
+        if (r != 0) printerr_and_quit(r);
+        if (!(i % 52)) {
+            printf("\rrunning tests on neural network... testing image %05d of %05d...", i+1, testing.image_handle->count);fflush(stdout);
+        }
+        (void)simplenet_classify(network, image, &classification);
+        if (classification != image->label) k++;
+        image_cleanup(image);
+    }
+    printf(" done with %f%% accuracy!\n", ((double)k/(double)(testing.image_handle->count))*100);
+
+    /* train the neural network */
+    printf("let's train again!\n");
+    printf("training network on image %05d of %05d...", 0, training.image_handle->count);fflush(stdout);
+    for (i = 0; i < training.image_handle->count; i++) {
+        r = data_read(training.image_handle, training.label_handle, i, &image);
+        if (r != 0) printerr_and_quit(r);
+        if (!(i % 97)) {
+            printf("\rtraining network on image %05d of %05d...", i+1, training.image_handle->count);fflush(stdout);
+        }
+        (void)simplenet_train(network, image);
+        image_cleanup(image);
+    }
+    printf(" done!\n");
+
+    printf("test again, too!\n");
+    /* now we run real tests */
+    printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
+    k = 0;
+    for (i = 0; i < testing.image_handle->count; i++) {
+        r = data_read(testing.image_handle, testing.label_handle, i, &image);
+        if (r != 0) printerr_and_quit(r);
+        if (!(i % 49)) {
+            printf("\rrunning tests on neural network... testing image %05d of %05d...", i+1, testing.image_handle->count);fflush(stdout);
+        }
+        (void)simplenet_classify(network, image, &classification);
+        if (classification != image->label) k++;
+        image_cleanup(image);
+    }
+    printf(" done with %f%% accuracy!\n", ((double)k/(double)(testing.image_handle->count))*100);
 
     /* now we run tests */
-    printf("time to test! manual testing enabled right now.\n");
+    printf("try the network for yourself!\n");
     do {
         printf("pick a number between 0 and %d, inclusive: ", testing.image_handle->count); fflush(stdout);
         scanf("%d", &k);
@@ -72,15 +115,14 @@ int main(int argc, char **argv) {
         for (i = 0; i < DATA_IMAGE_SIZE; i++) {
             for (j = 0; j < DATA_IMAGE_SIZE; j++) {
                 if (image->data[i*DATA_IMAGE_SIZE+j] > 250) printf("X");
-                else if (image->data[i*DATA_IMAGE_SIZE+j] > 220) printf("+");
+                else if (image->data[i*DATA_IMAGE_SIZE+j] > 200) printf("+");
                 else printf(" ");
             }
             printf("\n");
         }
         (void)simplenet_classify(network, image, &classification);
+        printf("--------------------%s network classification: %d\n", (classification == image->label ? "RIGHT" : "WRONG"), classification);
         image_cleanup(image);
-
-        printf("--------------------------network classification: %d\n", classification);
     } while (1);
 
     printf("thanks :)\n");
