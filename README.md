@@ -2,6 +2,9 @@
 
 MNIST number recognition using pure ANSI C.
 
+Credits to https://mmlind.github.io/Simple_1-Layer_Neural_Network_for_MNIST_Handwriting_Recognition/
+for inspiring this project and http://yann.lecun.com/exdb/mnist/ for creating the MNIST database.
+
 ## Perceptron
 
 Using a single-layer perceptron network with 10 neurons with inputs ranging from 0 to 1,
@@ -18,3 +21,21 @@ Under valgrind and with `-O0`, the training time is around 142 seconds.
 ## Convolutional
 
 Planned; NYI.
+
+## Roadmap
+
+1. Optimize matrix multiplication using BLAS and better memory management
+    * See code comments for info on how to represent the network as a matrix
+    * Target is < 1s train time exclusive of disk read
+2. Integrate with tigr
+    * Enable a user to draw their own numbers and have them recognized
+3. Make the code more extensible
+    * The idea is to not force a 784 vector
+    * Only use two different kinds of vectors, double and integer
+    * Will probably sacrifice some speed for this
+4. Add support for multi-layer perceptron network
+    * Logical progressioin after previous step
+    * https://mmlind.github.io/Simple_3-Layer_Neural_Network_for_MNIST_Handwriting_Recognition/ may help
+5. Implement convolutional network
+    * Convolutional networks are where it's at!
+    * https://mmlind.github.io/Deep_Neural_Network_for_MNIST_Handwriting_Recognition/ will probably help
