@@ -41,5 +41,6 @@ typedef struct _mnist_image {
 int data_open(const char *location, data_handle **handle);
 int data_read(data_handle *handle_image, data_handle *handle_label, int index, mnist_image **image);
 void data_cleanup(data_handle *handle);
+void image_cleanup(mnist_image *image);
 
 #endif /* __DATA_H_INC */

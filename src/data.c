@@ -30,7 +30,7 @@ int data_open(const char *location, data_handle **handle) {
     if (fp == NULL) return ERROR_READFILE;
 
     /* allocate memory */
-    *handle = malloc(sizeof(handle));
+    *handle = malloc(sizeof(data_handle));
     if (!(*handle)) { fclose(fp); return ERROR_OOM; }
     (*handle)->f = fp;
 
@@ -144,4 +144,8 @@ int data_read(data_handle *handle_image, data_handle *handle_label, int index, m
 void data_cleanup(data_handle *handle) {
     fclose(handle->f);
     free(handle);
+}
+
+void image_cleanup(mnist_image *image) {
+    free(image);
 }
