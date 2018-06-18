@@ -4,17 +4,8 @@
 #include <stdlib.h>
 /* clock() */
 #include <time.h>
+
 #include "data.h"
-
-#ifdef __I_KNOW_WHAT_IM_DOING
-
-int main() {
-    puts("ok, if you say so...");
-    return 0;
-}
-
-#else
-
 #include "perceptron.h"
 
 #define printerr_and_quit(x) do {\
@@ -232,5 +223,3 @@ byebye:
 
     return 0;
 }
-
-#endif

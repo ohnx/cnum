@@ -14,6 +14,9 @@ Problem numbers include #11 and #65 of t10k which are incorrectly recognized as 
 
 Run this just by doing `./cnum`. A pre-trained network is provided already and you can use it by answering 'Y' to the answer.
 
+Aside from `build-essential`, compilation requires `gfortran` to compile BLAS.
+Run `sudo apt-get install gfortran` on Debian systems to get it.
+
 When compiled with `-O3`, training time is around 4 seconds on my Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz
 for the 60k set, but I train the network on the 60k set twice, so it takes around 8 seconds total.
 Under valgrind and with `-O0`, the training time is around 142 seconds.

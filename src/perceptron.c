@@ -10,82 +10,6 @@
 #include "error.h"
 #include "perceptron.h"
 
-#ifdef __I_KNOW_WHAT_IM_DOING
-
-/**
- * Initialize a single neuron with random weights
- */
-int neuron_perceptron_init(int num_inputs, neuron_perceptron **neuron) {
-    int i;
-
-    /* allocate all memory required */
-    *neuron = malloc(sizeof(neuron_perceptron) + sizeof(double) * num_inputs);
-    if (!(*neuron)) return ERROR_OOM;
-
-    /* set number of inputs and array location */
-    (*neuron)->n = num_inputs;
-    (*neuron)->weights = *neuron + sizeof(neuron_perceptron);
-
-    /* initialize neurons to random values */
-    for (i = 0; i < num_inputs; i++) {
-        (*neuron)->weights[i] = rand()/((double)(RAND_MAX));
-    }
-
-    return ERROR_OK;
-}
-
-/**
- * Initialize a layer of neurons (but not each individual neuron)
- */
-int layer_perceptron_init(int num_neurons, layer_perceptron **layer) {
-    /* allocate memory for layer */
-    *layer = malloc(sizeof(layer_perceptron));
-    if (!(*layer)) return ERROR_OOM;
-
-    (*layer)->n = num_neurons;
-
-    /* allocate memory for neurons */
-    (*layer)->neurons = malloc(sizeof(neuron_perceptron) * num_neurons);
-    if (!((*layer)->neurons)) goto cleanup;
-    allocations[allocations_n++] = (*layer)->neurons;
-
-    /* allocate memory for each set of weights */
-    for (i = 0; i < num_neurons; i++) {
-        /* get current neuron pointer */
-        neuron = (*layer)->neurons + i;
-
-        neuron->n = num_inputs;
-
-        /* allocate memory for weights */
-        neuron->weights = malloc(sizeof(double) * num_inputs);
-        if (!(neuron->weights)) goto cleanup;
-        allocations[allocations_n++] = neuron->weights;
-
-        /* initialize the weights to random numbers */
-        for (j = 0; j < num_inputs; j++)
-            neuron->weights[j] = rand()/((double)(RAND_MAX));
-    }
-
-    /* all done! */
-    return ERROR_OK;
-
-cleanup:
-    /* free all memory allocations */
-    for (i = 0; i < allocations_n; i++) {
-        free(allocations[i]);
-    }
-    free(allocations);
-
-    return ERROR_OOM;
-}
-
-int network_perceptron_init() {
-    
-}
-
-
-#else
-
 int simplenet_init(simplenet **net) {
     int i, j;
     static char c = 0;
@@ -234,6 +158,3 @@ int simplenet_deserialize(byte *array, int length, simplenet **net) {
 
     return ERROR_OK;
 }
-
-#endif
-
