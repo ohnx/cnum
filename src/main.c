@@ -1,6 +1,9 @@
+/* printf() */
 #include <stdio.h>
 /* exit() */
 #include <stdlib.h>
+/* clock() */
+#include <time.h>
 #include "data.h"
 
 #ifdef __I_KNOW_WHAT_IM_DOING
@@ -29,6 +32,7 @@ int main(int argc, char **argv) {
     mnist_image *image;
     simplenet *network;
     int r, i, j, k;
+    clock_t begin, end;
     byte classification = 0;
 
     /* open the data */
@@ -46,6 +50,7 @@ int main(int argc, char **argv) {
 
     /* train the neural network */
     printf("training network on image %05d of %05d...", 0, training.image_handle->count);fflush(stdout);
+    begin = clock();
     for (i = 0; i < training.image_handle->count; i++) {
         r = data_read(training.image_handle, training.label_handle, i, &image);
         if (r != 0) printerr_and_quit(r);
@@ -55,11 +60,14 @@ int main(int argc, char **argv) {
         (void)simplenet_train(network, image);
         image_cleanup(image);
     }
-    printf(" done!\n");
+    end = clock();
+    printf("\rtraining network on image %05d of %05d...", training.image_handle->count, training.image_handle->count);fflush(stdout);
+    printf(" done in %fs!\n", ((double)(end - begin) / CLOCKS_PER_SEC));
 
     /* now we run real tests */
     printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
     k = 0;
+    begin = clock();
     for (i = 0; i < testing.image_handle->count; i++) {
         r = data_read(testing.image_handle, testing.label_handle, i, &image);
         if (r != 0) printerr_and_quit(r);
@@ -70,26 +78,32 @@ int main(int argc, char **argv) {
         if (classification != image->label) k++;
         image_cleanup(image);
     }
-    printf(" done with %f%% accuracy!\n", ((double)k/(double)(testing.image_handle->count))*100);
+    end = clock();
+    printf("\rrunning tests on neural network... testing image %05d of %05d...", testing.image_handle->count, testing.image_handle->count);fflush(stdout);
+    printf(" done in %fs with %f%% accuracy!\n", ((double)(end - begin) / CLOCKS_PER_SEC), (1-(double)k/(double)(testing.image_handle->count))*100);
 
     /* train the neural network */
     printf("let's train again!\n");
     printf("training network on image %05d of %05d...", 0, training.image_handle->count);fflush(stdout);
-    for (i = 0; i < training.image_handle->count; i++) {
+    begin = clock();
+    for (i = training.image_handle->count-1; i >= 0; i--) {
         r = data_read(training.image_handle, training.label_handle, i, &image);
         if (r != 0) printerr_and_quit(r);
         if (!(i % 97)) {
-            printf("\rtraining network on image %05d of %05d...", i+1, training.image_handle->count);fflush(stdout);
+            printf("\rtraining network on image %05d of %05d...", training.image_handle->count-i, training.image_handle->count);fflush(stdout);
         }
         (void)simplenet_train(network, image);
         image_cleanup(image);
     }
-    printf(" done!\n");
+    end = clock();
+    printf("\rtraining network on image %05d of %05d...", training.image_handle->count, training.image_handle->count);fflush(stdout);
+    printf(" done in %fs!\n", ((double)(end - begin) / CLOCKS_PER_SEC));
 
     printf("test again, too!\n");
     /* now we run real tests */
     printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
     k = 0;
+    begin = clock();
     for (i = 0; i < testing.image_handle->count; i++) {
         r = data_read(testing.image_handle, testing.label_handle, i, &image);
         if (r != 0) printerr_and_quit(r);
@@ -100,7 +114,9 @@ int main(int argc, char **argv) {
         if (classification != image->label) k++;
         image_cleanup(image);
     }
-    printf(" done with %f%% accuracy!\n", ((double)k/(double)(testing.image_handle->count))*100);
+    end = clock();
+    printf("\rrunning tests on neural network... testing image %05d of %05d...", testing.image_handle->count, testing.image_handle->count);fflush(stdout);
+    printf(" done in %fs with %f%% accuracy!\n", ((double)(end - begin) / CLOCKS_PER_SEC), (1-(double)k/(double)(testing.image_handle->count))*100);
 
     /* now we run tests */
     printf("try the network for yourself!\n");

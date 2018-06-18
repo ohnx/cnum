@@ -122,7 +122,8 @@ int simplenet_vec784d_run(vec784d *self, vec784 *input, double *output) {
     return ERROR_OK;
 }
 
-#define RATE 0.03
+/* RATE 0.005 = 78%; RATE 0.0075 = 78.9%; RATE 0.01 = 79%; RATE 0.025 = 79%; RATE 0.05 = 78%; */
+#define RATE 0.01
 int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
     int i = 0;
 
