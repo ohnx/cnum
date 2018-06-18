@@ -96,11 +96,13 @@ int simplenet_init(simplenet **net) {
     if (!c++) srand(time(NULL));
 
     /* for each neuron */
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 10; i++) {
         /* for each weight */
-        for (j = 0; j < 784; j++)
+        for (j = 0; j < 784; j++) {
             /* initialize to a random number */
-            (*net)->neurons[j].vec[j] = rand()/((double)(RAND_MAX));
+            (*net)->neurons[i].vec[j] = rand()/((double)(RAND_MAX));
+        }
+    }
 
     return ERROR_OK;
 }
@@ -111,11 +113,11 @@ int simplenet_vec784d_run(vec784d *self, vec784 *input, double *output) {
 
     /* loop through each weight and multiply the weight by the input value */
     for (i = 0; i < 784; i++) {
-        runningtotal += input->vec[i] * self->vec[i];
+        runningtotal += ((double)input->vec[i] / 256.0f) * self->vec[i];
     }
 
     /* average */
-    *output = runningtotal / 784;
+    *output = runningtotal / 784.0;
 
     return ERROR_OK;
 }
@@ -127,6 +129,10 @@ int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
     /* loop through each weight and increase or decrease the weight */
     for (i = 0; i < 784; i++) {
         self->vec[i] += RATE * input->vec[i] * error;
+        /* temporary fix... clip the max/min weights */
+        if (self->vec[i] > 1.0f) self->vec[i] = 1;
+        else if (self->vec[i] < -1.0f) self->vec[i] = -1;
+        /*printf("%f = %f * %d * %f\n", self->vec[i], RATE, input->vec[i], error);*/
     }
 
     return ERROR_OK;
@@ -155,6 +161,7 @@ int simplenet_train(simplenet *self, mnist_image *input) {
     for (i = 0; i < 10; i++) {
         /* error is how far away from the correct answer this was */
         error = (input->label == i ? 1 : 0) - neuron_outputs.vec[i];
+        /*printf("output: %f; expected: %d; error: %f\n", neuron_outputs.vec[i], input->label == i, error);*/
         (void)simplenet_vec784d_learnsup(&self->neurons[i], (vec784 *)&input->data, error);
     }
 
@@ -164,7 +171,7 @@ int simplenet_train(simplenet *self, mnist_image *input) {
 int simplenet_classify(simplenet *self, mnist_image *input, byte *classification) {
     vec10d results;
     double max = 0;
-    byte i, li;
+    byte i, li = 0;
 
     /* run the network */
     (void)simplenet_run(self, input, &results);

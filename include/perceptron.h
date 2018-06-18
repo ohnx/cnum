@@ -52,6 +52,10 @@ typedef struct __attribute__((packed)) _vec10 {
     byte vec[10];
 } vec10;
 
+int simplenet_init(simplenet **net);
+int simplenet_train(simplenet *self, mnist_image *input);
+int simplenet_classify(simplenet *self, mnist_image *input, byte *classification);
+
 #endif
 
 #endif /* __PERCEPTRON_H_INC */
