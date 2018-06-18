@@ -13,5 +13,7 @@
 #define ERROR_NONSTANDARDFILE   8
 /* invalid input parameters */
 #define ERROR_INVALIDINPUT      16
+/* invalid byte for deserialization */
+#define ERROR_CANTDESERIALIZE   32
 
 #endif /* __ERROR_H_INC */

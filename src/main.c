@@ -22,6 +22,8 @@ int main() {
     exit(x);\
 } while(0);
 
+#define PERCEPTRON_NET_NAME "perceptron.net"
+
 struct dataset {
     data_handle *image_handle;
     data_handle *label_handle;
@@ -34,6 +36,7 @@ int main(int argc, char **argv) {
     int r, i, j, k;
     clock_t begin, end;
     byte classification = 0;
+    char input[3];
 
     /* open the data */
     r = data_open("data/train-images-idx3-ubyte", &training.image_handle);
@@ -45,8 +48,50 @@ int main(int argc, char **argv) {
     r = data_open("data/t10k-labels-idx1-ubyte", &testing.label_handle);
     if (r != 0) printerr_and_quit(r);
 
-    /* create the neural network */
-    r = simplenet_init(&network);
+    do {
+        printf("load existing net? (Y/n) "); fflush(stdout);
+        r = scanf("%2s", input);
+
+        if (*input == 'Y') {
+            FILE *f;
+            byte *bytes;
+            int length;
+
+            f = fopen(PERCEPTRON_NET_NAME, "rb");
+            if (f == NULL) {
+                printf("failed to open file.\n");
+                continue;
+            }
+
+            fseek(f, 0, SEEK_END);
+            length = ftell(f);
+            fseek(f, 0, SEEK_SET);
+
+            bytes = (byte *)malloc(length);
+            if (length != fread(bytes, sizeof(byte), length, f)) {
+                free(bytes);
+                printf("failed to read file.\n");
+                continue;
+            }
+
+            fclose(f);
+
+            r = simplenet_deserialize(bytes, length, &network);
+            free(bytes);
+            if (r) {
+                printf("can't parse the network!");
+                continue;
+            }
+
+            goto testing;
+        } else if (*input == 'n') {
+            /* create the neural network */
+            r = simplenet_init(&network);
+            break;
+        } else {
+            printf("Invalid input.\n");
+        }
+    } while (1);
 
     /* train the neural network */
     printf("training network on image %05d of %05d...", 0, training.image_handle->count);fflush(stdout);
@@ -100,6 +145,7 @@ int main(int argc, char **argv) {
     printf(" done in %fs!\n", ((double)(end - begin) / CLOCKS_PER_SEC));
 
     printf("test again, too!\n");
+testing:
     /* now we run real tests */
     printf("running tests on neural network... testing image %05d of %05d...", 0, testing.image_handle->count);fflush(stdout);
     k = 0;
@@ -122,7 +168,7 @@ int main(int argc, char **argv) {
     printf("try the network for yourself!\n");
     do {
         printf("pick a number between 0 and %d, inclusive: ", testing.image_handle->count); fflush(stdout);
-        scanf("%d", &k);
+        r = scanf("%d", &k);
         if (k < 0 || k > testing.image_handle->count) break;
 
         r = data_read(training.image_handle, training.label_handle, k, &image);
@@ -143,11 +189,46 @@ int main(int argc, char **argv) {
 
     printf("thanks :)\n");
 
+    if (*input != 'Y') {
+        byte *array;
+        int length;
+        FILE *f;
+
+        printf("saving network...\n");
+
+        r = simplenet_serialize(network, &array, &length);
+        if (r) {
+            printf("failed to deserialize :(\n");
+            goto byebye;
+        }
+
+        f = fopen(PERCEPTRON_NET_NAME, "wb");
+        if (f == NULL) {
+            printf("failed to open output file :(\n");
+            free(array);
+            fclose(f);
+            goto byebye;
+        }
+
+        if (length != fwrite(array, sizeof(byte), length, f)) {
+            printf("failed to write file :(\n");
+            free(array);
+            fclose(f);
+            goto byebye;
+        }
+
+        printf("serialized the network!\n");
+        fclose(f);
+        free(array);
+    }
+
+byebye:
     /* cleanup */
     data_cleanup(training.image_handle);
     data_cleanup(training.label_handle);
     data_cleanup(testing.image_handle);
     data_cleanup(testing.label_handle);
+    free(network);
 
     return 0;
 }

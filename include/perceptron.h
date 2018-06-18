@@ -55,6 +55,8 @@ typedef struct __attribute__((packed)) _vec10 {
 int simplenet_init(simplenet **net);
 int simplenet_train(simplenet *self, mnist_image *input);
 int simplenet_classify(simplenet *self, mnist_image *input, byte *classification);
+int simplenet_serialize(simplenet *self, byte **array, int *length);
+int simplenet_deserialize(byte *array, int length, simplenet **net);
 
 #endif
 
