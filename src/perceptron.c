@@ -86,23 +86,32 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
     /* clear the input */
     memset(output, 0, sizeof(vec10d));
 
+    /**
+     * Here's a visual representation of what's happening here...
+     * 
+     *              | w0n0  w1n0    ... w783n0  |   | p0    |
+     *              | w0n1  w1n1    ... w783n1  |   | p1    |
+     *  (1/784)  *  | ...   ...     ... ...     | * | p2    |
+     *              | w0n8  w1n8    ... w783n8  |   | ...   |
+     *              | w0n9  w1n9    ... w783n9  |   | p783  |
+     *              {    10 rows, 784 columns   }   { 784 rows, 1 col }
+     */
+
     /* multiply the matrix */
     cblas_dgemv(
-        CblasColMajor, /* row-major (C) */
+        CblasRowMajor, /* row-major since we have 1 row of 784, then another row of 784, etc... */
         CblasNoTrans, /* no transposition */
-        10, 784, /* Matrix A is 10x784 */
+        10, /* Matrix A has 10 rows */
+        784, /* ...and 784 columns */
         1.0/784, /* No scaling factor for now; TODO: scale to 1/784 */
         (double *)self, /* Matrix A */
-        10, /* A[10][n] lda = 784 */
+        784, /* A[m][n] = A[m*784 + n] */
         (double *)&input_d, /* vector X should be a 784x1 matrix */
-        1, /* output skip */
+        1, /* no skip */
         0.0, /* scaling factor for vector Y is 0 since we don't use it */
         (double *)output, /* output vector Y */
         1 /* no skip */
     );
-
-    for (i = 0; i < 10; i++) printf("%f ", output->vec[i]);
-    printf("\n");
 
     return ERROR_OK;
 }
