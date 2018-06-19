@@ -23,6 +23,5 @@ clean:
 	-rm -f $(OUTPUT)
 
 .PHONY: test
-test:
-	valgrind ./$(OUTPUT) train
-	valgrind ./$(OUTPUT) test
+test: clean debug
+	valgrind ./$(OUTPUT)
