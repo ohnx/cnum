@@ -6,7 +6,8 @@ OUTPUT=cnum
 
 .PHONY: debug
 default: $(OUTPUT)
-debug: CFLAGS += -g -O0 -D__DEBUG
+# bug in gcc forces us to not have any pie :(
+debug: CFLAGS += -g -O0 -D__DEBUG -pg -no-pie
 debug: $(OUTPUT)
 
 objs/%.o: src/%.c

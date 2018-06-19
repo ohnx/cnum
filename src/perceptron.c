@@ -6,6 +6,8 @@
 #include <time.h>
 /* memcpy(), memset() */
 #include <string.h>
+/* bswap_64() */
+#include <byteswap.h>
 /* cblas_dgemv() */
 #include <cblas.h>
 
@@ -59,8 +61,8 @@ int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
     for (i = 0; i < 784; i++) {
         self->vec[i] += RATE * ((double)input->vec[i] / 255.0f) * error;
         /* temporary fix... clip the max/min weights */
-        if (self->vec[i] > 1.0f) self->vec[i] = 1;
-        else if (self->vec[i] < -1.0f) self->vec[i] = -1;
+        /*if (self->vec[i] > 1.0f) self->vec[i] = 1;
+        else if (self->vec[i] < -1.0f) self->vec[i] = -1;*/
         /*printf("%f = %f * %d * %f\n", self->vec[i], RATE, input->vec[i], error);*/
     }
 
@@ -118,6 +120,7 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
 
 int simplenet_train(simplenet *self, mnist_image *input) {
     byte i;
+    /*static vec784d */
     vec10d neuron_outputs;
     double error;
 
@@ -157,29 +160,52 @@ int simplenet_classify(simplenet *self, mnist_image *input, byte *classification
 }
 
 int simplenet_serialize(simplenet *self, byte **array, int *length) {
+    static const unsigned short magicnum = 0xEFBE;
+
     /* easy calculation here */
-    *length = sizeof(byte)*2 + sizeof(simplenet);
+    *length = sizeof(unsigned short) + sizeof(simplenet);
 
     /* allocate the memory */
     *array = malloc(*length);
     if (!(*array)) return ERROR_OOM;
 
     /* magic number */
-    (*array)[0] = 0xBE;
-    (*array)[1] = 0xEF;
+    *((short *)*array) = magicnum;
 
     /* copy over the data */
-    memcpy(*array+2, self, *length - sizeof(byte)*2);
+    memcpy(*array+sizeof(unsigned short), self, *length - sizeof(unsigned short));
 
     return ERROR_OK;
 }
 
 int simplenet_deserialize(byte *array, int length, simplenet **net) {
+    static const unsigned short magicnum = 0xEFBE;
+    byte swap_endianness = 0;
+
     /* check length */
-    if (length != sizeof(byte)*2 + sizeof(simplenet)) return ERROR_CANTDESERIALIZE;
+    if (length != sizeof(unsigned short) + sizeof(simplenet)) return ERROR_CANTDESERIALIZE;
 
     /* check magic number */
-    if (array[0] != 0xBE || array[1] != 0xEF) return ERROR_CANTDESERIALIZE;
+    if (array[0] == 0xBE && array[1] == 0xEF) { /* little endian file saved */
+        /* fetch system endianness */
+        if (((byte *)&magicnum)[0] == 0xBE) {
+            /* system is also little-endian, no work needed */
+        } else {
+            /* system is big-endian but file is little */
+            swap_endianness = 1;
+        }
+    } else if (array[0] == 0xEF && array[1] == 0xBE) { /* big endian file saved */
+        /* fetch system endianness */
+        if (((byte *)&magicnum)[0] == 0xBE) {
+            /* system is little-endian but file is big */
+            swap_endianness = 1;
+        } else {
+            /* system is also big-endian, no work needed */
+        }
+    } else {
+        /* not magic number */
+        return ERROR_CANTDESERIALIZE;
+    }
 
     /* allocate memory */
     *net = malloc(sizeof(simplenet));
@@ -187,6 +213,17 @@ int simplenet_deserialize(byte *array, int length, simplenet **net) {
 
     /* copy over data */
     memcpy(*net, array+2, length - sizeof(byte)*2);
+
+    /* swap endianness if necessary */
+    if (swap_endianness) {
+        int i;
+        double *ptr = (double *)(*net);
+
+        for (i = 0; i < 7840; i++) {
+            /* get the exact byte address */
+            ptr[i] = (double)bswap_64(ptr[i]);
+        }
+    }
 
     return ERROR_OK;
 }

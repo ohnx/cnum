@@ -8,9 +8,9 @@ for inspiring this project and http://yann.lecun.com/exdb/mnist/ for creating th
 ## Perceptron
 
 Using a single-layer perceptron network with 10 neurons with inputs ranging from 0 to 1,
-inclusive, I am able to obtain an 80% accuracy rate after the second round of training.
+inclusive, I am able to obtain an accuracy rate of 85% after the fourth round of training.
 
-Problem numbers include #11 and #65 of t10k which are incorrectly recognized as 8 and #24 of t10k.
+Problem numbers include #11 of t10k, #24 of t10k, and #943 of t10k.
 
 Run this just by doing `./cnum`. A pre-trained network is provided already and you can use it by answering 'Y' to the answer.
 
