@@ -37,21 +37,6 @@ int simplenet_init(simplenet **net) {
     return ERROR_OK;
 }
 
-/* 0.02 reaches 79.5% accuracy in the first round and 80.1% in the second. */
-#define RATE 0.02
-int simplenet_vec784d_learnsup(vec784d *self, vec784d *input, double error) {
-    cblas_daxpy(
-        784, /* 784 elements in the vector */
-        RATE * error, /* multiply the input value by RATE * error */
-        (double *)input, /* input vector */
-        1, /* no skip */
-        (double *)self, /* output is self */
-        1 /* no skip */
-    );
-
-    return ERROR_OK;
-}
-
 int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
     /* clear the output vector */
     memset(output, 0, sizeof(vec10d));
@@ -86,6 +71,8 @@ int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
     return ERROR_OK;
 }
 
+/* Todo: more fiddling to see how the RATE could affect accuracy */
+#define RATE 0.02
 int simplenet_train(simplenet *self, mnist_image *input) {
     byte i;
     int j;
@@ -105,7 +92,16 @@ int simplenet_train(simplenet *self, mnist_image *input) {
     for (i = 0; i < 10; i++) {
         /* error is how far away from the correct answer this was */
         error = (input->label == i ? 1 : 0) - neuron_outputs.vec[i];
-        (void)simplenet_vec784d_learnsup(&self->neurons[i], &input_d, error);
+
+        /* update the error */
+        cblas_daxpy(
+            784, /* 784 elements in the vector */
+            RATE * error, /* multiply the input value by RATE * error */
+            (double *)&input_d, /* input vector */
+            1, /* no skip */
+            (double *)&self->neurons[i], /* output is self */
+            1 /* no skip */
+        );
     }
 
     return ERROR_OK;
