@@ -37,42 +37,19 @@ int simplenet_init(simplenet **net) {
     return ERROR_OK;
 }
 
-int simplenet_vec784d_run(vec784d *self, vec784 *input, double *output) {
-    double runningtotal = 0;
-    int i;
-
-    /* loop through each weight and multiply the weight by the input value */
-    for (i = 0; i < 784; i++) {
-        runningtotal += ((double)input->vec[i] / 255.0f) * self->vec[i];
-    }
-
-    /* average */
-    *output = runningtotal / 784.0;
-
-    return ERROR_OK;
-}
-
 /* 0.02 reaches 79.5% accuracy in the first round and 80.1% in the second. */
 #define RATE 0.02
 int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
     int i = 0;
 
     /* loop through each weight and increase or decrease the weight */
-    for (i = 0; i < 784; i++) {
+    for (i = 0; i < 784; i++)
         self->vec[i] += RATE * ((double)input->vec[i] / 255.0f) * error;
-        /* temporary fix... clip the max/min weights */
-        /*if (self->vec[i] > 1.0f) self->vec[i] = 1;
-        else if (self->vec[i] < -1.0f) self->vec[i] = -1;*/
-        /*printf("%f = %f * %d * %f\n", self->vec[i], RATE, input->vec[i], error);*/
-    }
 
     return ERROR_OK;
 }
 
-int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
-    int i;
-    vec784d input_d;
-
+int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
     /*
      * this is the equivalent of multiplying a 1x784 matrix (input) by a 784x10 matrix (weights)
      * (the only missing step is dividing each output by 784)
@@ -80,10 +57,6 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
      * for now, with -O3, I reach speeds of ~3s to train all 60k images, which is
      * fast enough :)
      */
-
-    /* convert the input */
-    for (i = 0; i < 784; i++)
-        input_d.vec[i] = (double)input->vec[i]/255.0f;
 
     /* clear the input */
     memset(output, 0, sizeof(vec10d));
@@ -108,7 +81,7 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
         1.0/784, /* No scaling factor for now; TODO: scale to 1/784 */
         (double *)self, /* Matrix A */
         784, /* A[m][n] = A[m*784 + n] */
-        (double *)&input_d, /* vector X should be a 784x1 matrix */
+        (double *)input, /* vector X should be a 784x1 matrix */
         1, /* no skip */
         0.0, /* scaling factor for vector Y is 0 since we don't use it */
         (double *)output, /* output vector Y */
@@ -120,18 +93,23 @@ int simplenet_run(simplenet *self, vec784 *input, vec10d *output) {
 
 int simplenet_train(simplenet *self, mnist_image *input) {
     byte i;
+    int j;
     /*static vec784d */
     vec10d neuron_outputs;
+    vec784d input_d;
     double error;
 
+    /* convert the input */
+    for (j = 0; j < 784; j++)
+        input_d.vec[j] = (double)input->data[j]/255.0f;
+
     /* run the network to see what the results are */
-    simplenet_run(self, (vec784 *)input->data, &neuron_outputs);
+    simplenet_run(self, &input_d, &neuron_outputs);
 
     /* loop through and perform corrections as necessary */
     for (i = 0; i < 10; i++) {
         /* error is how far away from the correct answer this was */
         error = (input->label == i ? 1 : 0) - neuron_outputs.vec[i];
-        /*printf("output: %f; expected: %d; error: %f\n", neuron_outputs.vec[i], input->label == i, error);*/
         (void)simplenet_vec784d_learnsup(&self->neurons[i], (vec784 *)&input->data, error);
     }
 
@@ -140,11 +118,17 @@ int simplenet_train(simplenet *self, mnist_image *input) {
 
 int simplenet_classify(simplenet *self, mnist_image *input, byte *classification) {
     vec10d results;
+    vec784d input_d;
     double max = 0;
+    int j;
     byte i, li = 0;
 
+    /* convert the input */
+    for (j = 0; j < 784; j++)
+        input_d.vec[j] = (double)input->data[j]/255.0f;
+
     /* run the network */
-    (void)simplenet_run(self, (vec784 *)input->data, &results);
+    (void)simplenet_run(self, &input_d, &results);
 
     /* interpret the results */
     for (i = 0; i < 10; i++) {

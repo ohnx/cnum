@@ -3,16 +3,16 @@ Flat profile:
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  us/call  us/call  name    
- 93.50      5.95     5.95  1200000     4.96     4.96  simplenet_vec784d_learnsup
-  5.98      6.33     0.38   140006     2.72     2.72  simplenet_run
-  0.63      6.37     0.04   120000     0.33    52.61  simplenet_train
-  0.00      6.37     0.00   140006     0.00     0.00  data_read
-  0.00      6.37     0.00   140006     0.00     0.00  image_cleanup
-  0.00      6.37     0.00    20006     0.00     2.72  simplenet_classify
-  0.00      6.37     0.00        4     0.00     0.00  data_cleanup
-  0.00      6.37     0.00        4     0.00     0.00  data_open
-  0.00      6.37     0.00        1     0.00     0.00  simplenet_init
-  0.00      6.37     0.00        1     0.00     0.00  simplenet_serialize
+ 91.93      6.19     6.19  1200000     5.16     5.16  simplenet_vec784d_learnsup
+  7.44      6.69     0.50   120000     4.17    55.73  simplenet_train
+  0.74      6.74     0.05    20000     2.50     2.50  simplenet_classify
+  0.00      6.74     0.00   140000     0.00     0.00  data_read
+  0.00      6.74     0.00   140000     0.00     0.00  image_cleanup
+  0.00      6.74     0.00   140000     0.00     0.00  simplenet_run
+  0.00      6.74     0.00        4     0.00     0.00  data_cleanup
+  0.00      6.74     0.00        4     0.00     0.00  data_open
+  0.00      6.74     0.00        1     0.00     0.00  simplenet_init
+  0.00      6.74     0.00        1     0.00     0.00  simplenet_serialize
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -50,41 +50,41 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 0.16% of 6.37 seconds
+granularity: each sample hit covers 2 byte(s) for 0.15% of 6.74 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]    100.0    0.00    6.37                 main [1]
-                0.04    6.27  120000/120000      simplenet_train [2]
-                0.00    0.05   20006/20006       simplenet_classify [5]
-                0.00    0.00  140006/140006      data_read [6]
-                0.00    0.00  140006/140006      image_cleanup [7]
+[1]    100.0    0.00    6.74                 main [1]
+                0.50    6.19  120000/120000      simplenet_train [2]
+                0.05    0.00   20000/20000       simplenet_classify [4]
+                0.00    0.00  140000/140000      data_read [5]
+                0.00    0.00  140000/140000      image_cleanup [6]
                 0.00    0.00       4/4           data_open [9]
                 0.00    0.00       4/4           data_cleanup [8]
                 0.00    0.00       1/1           simplenet_init [10]
                 0.00    0.00       1/1           simplenet_serialize [11]
 -----------------------------------------------
-                0.04    6.27  120000/120000      main [1]
-[2]     99.1    0.04    6.27  120000         simplenet_train [2]
-                5.95    0.00 1200000/1200000     simplenet_vec784d_learnsup [3]
-                0.33    0.00  120000/140006      simplenet_run [4]
+                0.50    6.19  120000/120000      main [1]
+[2]     99.3    0.50    6.19  120000         simplenet_train [2]
+                6.19    0.00 1200000/1200000     simplenet_vec784d_learnsup [3]
+                0.00    0.00  120000/140000      simplenet_run [7]
 -----------------------------------------------
-                5.95    0.00 1200000/1200000     simplenet_train [2]
-[3]     93.4    5.95    0.00 1200000         simplenet_vec784d_learnsup [3]
+                6.19    0.00 1200000/1200000     simplenet_train [2]
+[3]     91.8    6.19    0.00 1200000         simplenet_vec784d_learnsup [3]
 -----------------------------------------------
-                0.05    0.00   20006/140006      simplenet_classify [5]
-                0.33    0.00  120000/140006      simplenet_train [2]
-[4]      6.0    0.38    0.00  140006         simplenet_run [4]
+                0.05    0.00   20000/20000       main [1]
+[4]      0.7    0.05    0.00   20000         simplenet_classify [4]
+                0.00    0.00   20000/140000      simplenet_run [7]
 -----------------------------------------------
-                0.00    0.05   20006/20006       main [1]
-[5]      0.9    0.00    0.05   20006         simplenet_classify [5]
-                0.05    0.00   20006/140006      simplenet_run [4]
+                0.00    0.00  140000/140000      main [1]
+[5]      0.0    0.00    0.00  140000         data_read [5]
 -----------------------------------------------
-                0.00    0.00  140006/140006      main [1]
-[6]      0.0    0.00    0.00  140006         data_read [6]
+                0.00    0.00  140000/140000      main [1]
+[6]      0.0    0.00    0.00  140000         image_cleanup [6]
 -----------------------------------------------
-                0.00    0.00  140006/140006      main [1]
-[7]      0.0    0.00    0.00  140006         image_cleanup [7]
+                0.00    0.00   20000/140000      simplenet_classify [4]
+                0.00    0.00  120000/140000      simplenet_train [2]
+[7]      0.0    0.00    0.00  140000         simplenet_run [7]
 -----------------------------------------------
                 0.00    0.00       4/4           main [1]
 [8]      0.0    0.00    0.00       4         data_cleanup [8]
@@ -189,7 +189,7 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [8] data_cleanup            [5] simplenet_classify      [2] simplenet_train
+   [8] data_cleanup            [4] simplenet_classify      [2] simplenet_train
    [9] data_open              [10] simplenet_init          [3] simplenet_vec784d_learnsup
-   [6] data_read               [4] simplenet_run
-   [7] image_cleanup          [11] simplenet_serialize
+   [5] data_read               [7] simplenet_run
+   [6] image_cleanup          [11] simplenet_serialize
