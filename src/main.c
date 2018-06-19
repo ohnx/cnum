@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
         if (!(i % 93)) {
             printf("\rtraining network on image %05d of %05d...", i+1, training.image_handle->count);fflush(stdout);
         }
-        (void)simplenet_train(network, image);
+        simplenet_train(network, image);
         image_cleanup(image);
     }
     end = clock();
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
         if (!(i % 52)) {
             printf("\rrunning tests on neural network... testing image %05d of %05d...", i+1, testing.image_handle->count);fflush(stdout);
         }
-        (void)simplenet_classify(network, image, &classification);
+        simplenet_classify(network, image, &classification);
         if (classification != image->label) k++;
         image_cleanup(image);
     }
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
         if (!(i % 97)) {
             printf("\rtraining network on image %05d of %05d...", training.image_handle->count-i, training.image_handle->count);fflush(stdout);
         }
-        (void)simplenet_train(network, image);
+        simplenet_train(network, image);
         image_cleanup(image);
     }
     end = clock();
@@ -147,7 +147,7 @@ testing:
         if (!(i % 49)) {
             printf("\rrunning tests on neural network... testing image %05d of %05d...", i+1, testing.image_handle->count);fflush(stdout);
         }
-        (void)simplenet_classify(network, image, &classification);
+        simplenet_classify(network, image, &classification);
         if (classification != image->label) k++;
         image_cleanup(image);
     }

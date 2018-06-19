@@ -28,9 +28,8 @@ Planned; NYI.
 
 ## Roadmap
 
-1. Optimize matrix multiplication using BLAS and better memory management
-    * See code comments for info on how to represent the network as a matrix
-    * Target is < 1s train time exclusive of disk read
+1. ~~Optimize matrix multiplication using BLAS and better memory management~~ **Done on June 18, 2018!**
+    * ~~Target is < 1s train time~~ Train time is ~0.7s when optimized
 2. Integrate with tigr
     * Enable a user to draw their own numbers and have them recognized
 3. Make the code more extensible

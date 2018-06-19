@@ -37,7 +37,7 @@ int simplenet_init(simplenet **net) {
     return ERROR_OK;
 }
 
-int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
+void simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
     /* clear the output vector */
     memset(output, 0, sizeof(vec10d));
 
@@ -67,13 +67,11 @@ int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
         (double *)output, /* output vector Y */
         1 /* no skip */
     );
-
-    return ERROR_OK;
 }
 
 /* Todo: more fiddling to see how the RATE could affect accuracy */
 #define RATE 0.02
-int simplenet_train(simplenet *self, mnist_image *input) {
+void simplenet_train(simplenet *self, mnist_image *input) {
     byte i;
     int j;
     /*static vec784d */
@@ -103,11 +101,9 @@ int simplenet_train(simplenet *self, mnist_image *input) {
             1 /* no skip */
         );
     }
-
-    return ERROR_OK;
 }
 
-int simplenet_classify(simplenet *self, mnist_image *input, byte *classification) {
+void simplenet_classify(simplenet *self, mnist_image *input, byte *classification) {
     vec10d results;
     vec784d input_d;
     double max = 0;
@@ -130,8 +126,6 @@ int simplenet_classify(simplenet *self, mnist_image *input, byte *classification
     }
 
     *classification = li;
-
-    return ERROR_OK;
 }
 
 int simplenet_serialize(simplenet *self, byte **array, int *length) {
