@@ -39,26 +39,21 @@ int simplenet_init(simplenet **net) {
 
 /* 0.02 reaches 79.5% accuracy in the first round and 80.1% in the second. */
 #define RATE 0.02
-int simplenet_vec784d_learnsup(vec784d *self, vec784 *input, double error) {
-    int i = 0;
-
-    /* loop through each weight and increase or decrease the weight */
-    for (i = 0; i < 784; i++)
-        self->vec[i] += RATE * ((double)input->vec[i] / 255.0f) * error;
+int simplenet_vec784d_learnsup(vec784d *self, vec784d *input, double error) {
+    cblas_daxpy(
+        784, /* 784 elements in the vector */
+        RATE * error, /* multiply the input value by RATE * error */
+        (double *)input, /* input vector */
+        1, /* no skip */
+        (double *)self, /* output is self */
+        1 /* no skip */
+    );
 
     return ERROR_OK;
 }
 
 int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
-    /*
-     * this is the equivalent of multiplying a 1x784 matrix (input) by a 784x10 matrix (weights)
-     * (the only missing step is dividing each output by 784)
-     * one day, I could use BLAS to multiply the matrices and maybe it will be faster.
-     * for now, with -O3, I reach speeds of ~3s to train all 60k images, which is
-     * fast enough :)
-     */
-
-    /* clear the input */
+    /* clear the output vector */
     memset(output, 0, sizeof(vec10d));
 
     /**
@@ -78,7 +73,7 @@ int simplenet_run(simplenet *self, vec784d *input, vec10d *output) {
         CblasNoTrans, /* no transposition */
         10, /* Matrix A has 10 rows */
         784, /* ...and 784 columns */
-        1.0/784, /* No scaling factor for now; TODO: scale to 1/784 */
+        1.0/784, /* We want to divide the resultant sum by 784 */
         (double *)self, /* Matrix A */
         784, /* A[m][n] = A[m*784 + n] */
         (double *)input, /* vector X should be a 784x1 matrix */
@@ -110,7 +105,7 @@ int simplenet_train(simplenet *self, mnist_image *input) {
     for (i = 0; i < 10; i++) {
         /* error is how far away from the correct answer this was */
         error = (input->label == i ? 1 : 0) - neuron_outputs.vec[i];
-        (void)simplenet_vec784d_learnsup(&self->neurons[i], (vec784 *)&input->data, error);
+        (void)simplenet_vec784d_learnsup(&self->neurons[i], &input_d, error);
     }
 
     return ERROR_OK;

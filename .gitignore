@@ -2,3 +2,5 @@ cnum
 objs/
 *.o
 *.a
+*.out
+data/perceptron.net

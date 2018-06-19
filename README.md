@@ -17,9 +17,10 @@ Run this just by doing `./cnum`. A pre-trained network is provided already and y
 Aside from `build-essential`, compilation requires BLAS.
 Run `sudo apt-get install libopenblas-dev` on Debian systems to get it.
 
-When compiled with `-O3`, training time is around 4 seconds on my Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz
-for the 60k set, but I train the network on the 60k set twice, so it takes around 8 seconds total.
-Under valgrind and with `-O0`, the training time is around 142 seconds.
+When compiled with `-O3`, training time is around 0.8 seconds on my Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz
+for the 60k set, but I train the network on the 60k set twice, so it takes under 2 seconds total.
+With debug mode (`-O0 -g -pg`), the training time is around 1 second each and 2 seconds total.
+Thanks, BLAS :)
 
 ## Convolutional
 
